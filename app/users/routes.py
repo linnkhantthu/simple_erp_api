@@ -4,7 +4,8 @@ users = Blueprint('users', __name__)
 
 
 @users.route('/', methods=['POST'])
-@users.route('/register', methods=['GET', 'POST'])
+@users.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    return jsonify(data)
+    data["id"] = 1
+    return data
