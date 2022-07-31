@@ -15,8 +15,8 @@ def register():
     db.session.add(user)
     try:
         db.session.commit()
-    except:
-        return Response({"message": "User already exists"}, 400)
+    except Exception as e:
+        return Response({"message": e}, 400)
     response = {
         "id": user.id,
         "firstName": user.firstName,

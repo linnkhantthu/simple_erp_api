@@ -1,4 +1,3 @@
-from enum import unique
 from app import db
 
 
@@ -12,4 +11,4 @@ class User(db.Model):
     def validate_mail(self):
         user = User.query.find(mail=self.mail)
         if(user):
-            raise "User already exists."
+            raise Exception("User already exists.")
