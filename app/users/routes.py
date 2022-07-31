@@ -10,10 +10,10 @@ users = Blueprint('users', __name__)
 def register():
     data = request.get_json()
     password = bcrypt.generate_password_hash(data['password'])
+    db_user = User.query.filter_by(mail=data['mail']).first()
     user = User(mail=data['mail'], firstName=data['firstName'],
                 lastName=data['lastName'], password=password)
     db.session.add(user)
-    db_user = User.query.filter_by(mail=data['mail'])
     if(db_user):
         response = {"status": False, "data": {"message": "User already exist"}}
     else:
