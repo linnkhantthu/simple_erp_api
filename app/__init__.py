@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from app.configs import Config
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -13,6 +14,8 @@ def create_app():
 
     db.init_app(app)
     db.init_app(app)
+
+    migrate = Migrate(app, db)
 
     from app.users.routes import users
 
