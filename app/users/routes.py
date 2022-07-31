@@ -24,3 +24,19 @@ def register():
         "mail": user.mail
     }
     return response
+
+
+@users.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(mail=data['mail']).first()
+    if user and bcrypt.check_password_hash(user.password, data['password']):
+        response = {
+            "id": user.id,
+            "firstName": user.firstName,
+            "lastName": user.lastName,
+            "mail": user.mail
+        }
+    else:
+        return Response({"message": "Mail or Password is incorrect"}, 400)
+    return response

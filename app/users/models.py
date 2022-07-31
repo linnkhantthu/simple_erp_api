@@ -9,6 +9,6 @@ class User(db.Model):
     password = db.Column(db.String(150))
 
     def validate_mail(self):
-        user = User.query.find(mail=self.mail)
+        user = User.query.filter_by(mail=self.mail).first()
         if(user):
             raise Exception("User already exists.")
