@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, jsonify, request
 from app.users.models import User
 from app import bcrypt, db
 
@@ -13,16 +13,18 @@ def register():
     user = User(mail=data['mail'], firstName=data['firstName'],
                 lastName=data['lastName'], password=password)
     db.session.add(user)
-    try:
+    db_user = User.query.filter_by(mail=data['mail'])
+    if(db_user):
+        response = {"status": False, "data": {"message": "User already exist"}}
+    else:
         db.session.commit()
-    except Exception as e:
-        return Response({"message": e}, 400)
-    response = {
-        "id": user.id,
-        "firstName": user.firstName,
-        "lastName": user.lastName,
-        "mail": user.mail
-    }
+        response = {
+            "status": True,
+            "data": {"id": user.id,
+                     "firstName": user.firstName,
+                     "lastName": user.lastName,
+                     "mail": user.mail}
+        }
     return response
 
 
@@ -32,11 +34,13 @@ def login():
     user = User.query.filter_by(mail=data['mail']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         response = {
-            "id": user.id,
-            "firstName": user.firstName,
-            "lastName": user.lastName,
-            "mail": user.mail
+            "status": True,
+            "data": {"id": user.id,
+                     "firstName": user.firstName,
+                     "lastName": user.lastName,
+                     "mail": user.mail}
         }
     else:
-        return Response({"message": "Mail or Password is incorrect"}, 400)
+        response = {"status": False, "data": {
+            "message": "Mail or Password is incorrect"}}
     return response
