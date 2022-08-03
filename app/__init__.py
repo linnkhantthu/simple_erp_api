@@ -18,7 +18,9 @@ def create_app():
     migrate = Migrate(app, db)
 
     from app.users.routes import users
+    from app.inventory.routes import inventory
 
     app.register_blueprint(users)
+    app.register_blueprint(inventory)
 
     return app
