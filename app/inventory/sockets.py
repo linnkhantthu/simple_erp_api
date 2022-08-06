@@ -1,14 +1,10 @@
-from app import create_app, socketio
-from flask_socketio import emit
+from flask import Blueprint
 
-from app.inventory.models import Product
-from app.users.models import User
-
-app = create_app()
+ws = Blueprint(r'ws', __name__)
 
 
-@socketio.on('connect')
-def test_connect():
+@ws.route("/product_list")
+def products(json):
     dummyProductList = [
         {
             "id": 1,
@@ -131,8 +127,26 @@ def test_connect():
             "qty": 5,
         },
     ]
-    emit('fromServer',  {'data': dummyProductList})
-
-
-if __name__ == "__main__":
-    socketio.run(app=app, host='0.0.0.0', debug=True)
+    # data = request.get_json()
+    data = json
+    user = User.query.filter_by(mail=data['mail']).first()
+    if user:
+        response = {
+            "status": True,
+            "data": [],
+        }
+        products = Product.query.filter_by(owner=user)
+        for product in dummyProductList:
+            response["data"].append({"id": product['id'],
+                                     "productName": product['productName'],
+                                     "contains": product['contains'],
+                                     "unit": product['unit'],
+                                     "price": product['price'],
+                                     "qty": product['qty']}
+                                    )
+        # return send(response)
+    else:
+        response = {"status": False, "data": {
+            "message": "You don't have access to this page"}}
+        # return send(response)
+    return send(response)

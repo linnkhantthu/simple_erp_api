@@ -3,9 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from app.configs import Config
 from flask_migrate import Migrate
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
+socketio = SocketIO()
 
 
 def create_app():
@@ -13,7 +15,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
-    db.init_app(app)
+    socketio.init_app(app)
 
     migrate = Migrate(app, db)
 
