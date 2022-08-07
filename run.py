@@ -5,17 +5,19 @@ from app.inventory.models import Product
 from app.users.models import User
 
 app = create_app()
+socketio.async_mode = True
 
 
-@socketio.on('connect')
-def test_connect():
+@socketio.on('getProducts')
+def product_list(data):
+
     dummyProductList = [
         {
-            "id": 1,
+            "id": 11,
             "productName": "Cow Hat",
             "contains": 100,
             "unit": "PCS",
-            "price": 2500.0,
+            "price": 3500.0,
             "qty": 150
         },
         {
@@ -131,9 +133,29 @@ def test_connect():
             "qty": 5,
         },
     ]
-    emit('getProducts',  {'data': dummyProductList})
+
+    user = User.query.filter_by(mail=data['mail']).first()
+
+    if(user):
+        products = Product.query.filter_by(owner=user)
+        productList = []
+        for product in products:
+            productList.append(
+                {
+                    "id": int(product.id),
+                    "productName": product.productName,
+                    "contains": int(product.contains),
+                    "unit": product.unit,
+                    "price": float(product.price),
+                    "qty": int(product.qty)
+                },
+            )
+
+        emit('getProducts',  {'data': productList})
+    else:
+        emit('getProducts', {'data': []})
 
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', debug=True)
+
     socketio.run(app=app, host='0.0.0.0', debug=True)
