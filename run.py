@@ -12,11 +12,11 @@ def test_connect():
     dummyProductList = [
         {
             "id": 1,
-            "productName": "Hat",
+            "productName": "Cow Hat",
             "contains": 100,
             "unit": "PCS",
             "price": 2500.0,
-            "qty": 200,
+            "qty": 150
         },
         {
             "id": 2,
