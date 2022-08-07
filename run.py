@@ -131,8 +131,9 @@ def test_connect():
             "qty": 5,
         },
     ]
-    emit('fromServer',  {'data': dummyProductList})
+    emit('getProducts',  {'data': dummyProductList})
 
 
 if __name__ == "__main__":
+    # app.run(host='0.0.0.0', debug=True)
     socketio.run(app=app, host='0.0.0.0', debug=True)
