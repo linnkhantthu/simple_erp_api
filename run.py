@@ -1,8 +1,4 @@
-from app import create_app, socketio
-from flask_socketio import emit
-
-from app.inventory.models import Product
-from app.users.models import User
+from app import create_app
 
 app = create_app()
 
