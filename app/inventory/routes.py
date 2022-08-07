@@ -137,13 +137,13 @@ def products():
             "data": [],
         }
         products = Product.query.filter_by(owner=user)
-        for product in dummyProductList:
-            response["data"].append({"id": product['id'],
-                                     "productName": product['productName'],
-                                     "contains": product['contains'],
-                                     "unit": product['unit'],
-                                     "price": product['price'],
-                                     "qty": product['qty']}
+        for product in products:
+            response["data"].append({"id": int(product.id),
+                                     "productName": product.productName,
+                                     "contains": int(product.contains),
+                                     "unit": product.unit,
+                                     "price": float(product.price),
+                                     "qty": int(product.qty)}
                                     )
         return jsonify(response)
     else:
