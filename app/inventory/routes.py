@@ -1,8 +1,7 @@
-from ast import Expression
 from flask import Blueprint, jsonify, request
 from app.inventory.models import Product
 from app.users.models import User
-from app import db
+from app import db, sock
 
 inventory = Blueprint('inventory', __name__)
 
@@ -109,3 +108,13 @@ def addProduct():
         "data": new_data,
     }
     return response
+
+
+_sock = Blueprint('sock', __name__)
+
+
+@_sock.route('/echo')
+def echo(ws):
+    while True:
+        data = ws.receive()
+        ws.send(data)
