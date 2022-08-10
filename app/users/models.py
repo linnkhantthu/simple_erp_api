@@ -8,6 +8,7 @@ class User(db.Model):
     mail = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     product = db.relationship('Product', backref='owner', lazy=True)
+    unit = db.relationship('Unit', backref='owner', lazy=True)
 
     def __repr__(self):
         return f"<User {self.mail}>"

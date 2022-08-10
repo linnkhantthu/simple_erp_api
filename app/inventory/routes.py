@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from app.inventory.models import Product
 from app.users.models import User
 from flask_socketio import emit
-from app import socketio
+from app import socketio, db
 
 inventory = Blueprint('inventory', __name__)
 
@@ -176,3 +176,39 @@ def product_list(data):
         emit('getProducts',  {'data': productList, 'units': ["PCS", "KG"]})
     else:
         emit('getProducts', {'data': []})
+
+
+@socketio.on('addProduct')
+def add_product(dataFromServer):
+    print(type(int(dataFromServer['id'])))
+    status = False
+    data = "You don't have access to this route"
+    user = User.query.filter_by(mail=dataFromServer['mail']).first()
+    if(user):
+        product = Product(
+            id=int(dataFromServer['id']),
+            productName=dataFromServer['productName'],
+            contains=int(dataFromServer['contains']),
+            price=float(dataFromServer['price']),
+            unit=dataFromServer['unit'],
+            owner=user
+        )
+        db.session.add(product)
+        try:
+            db.session.commit()
+            status = True
+            addedProduct = Product.query.get(product.id)
+            data = {
+                "id": addedProduct.id,
+                "productName": addedProduct.productName,
+                "contains": addedProduct.contains,
+                "unit": addedProduct.unit,
+                "price": addedProduct.price,
+                "qty": addedProduct.qty
+            }
+
+        except Exception as e:
+            status = False
+            data = e
+    print("To client", status, data)
+    emit('addProduct', {"status": status, "data": data})
