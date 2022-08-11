@@ -180,35 +180,43 @@ def product_list(data):
 
 @socketio.on('addProduct')
 def add_product(dataFromServer):
-    print(type(int(dataFromServer['id'])))
     status = False
+    errorCode = "PASS"
     data = "You don't have access to this route"
     user = User.query.filter_by(mail=dataFromServer['mail']).first()
     if(user):
-        product = Product(
-            id=int(dataFromServer['id']),
-            productName=dataFromServer['productName'],
-            contains=int(dataFromServer['contains']),
-            price=float(dataFromServer['price']),
-            unit=dataFromServer['unit'],
-            owner=user
-        )
-        db.session.add(product)
-        try:
-            db.session.commit()
-            status = True
-            addedProduct = Product.query.get(product.id)
-            data = {
-                "id": addedProduct.id,
-                "productName": addedProduct.productName,
-                "contains": addedProduct.contains,
-                "unit": addedProduct.unit,
-                "price": addedProduct.price,
-                "qty": addedProduct.qty
-            }
+        productExist = Product.query.get(dataFromServer['id'])
+        if(not productExist):
+            product = Product(
+                id=int(dataFromServer['id']),
+                productName=dataFromServer['productName'],
+                contains=int(dataFromServer['contains']),
+                price=float(dataFromServer['price']),
+                unit=dataFromServer['unit'],
+                owner=user
+            )
+            db.session.add(product)
+            try:
+                db.session.commit()
+                status = True
+                addedProduct = Product.query.get(product.id)
+                data = {
+                    "id": addedProduct.id,
+                    "productName": addedProduct.productName,
+                    "contains": addedProduct.contains,
+                    "unit": addedProduct.unit,
+                    "price": addedProduct.price,
+                    "qty": addedProduct.qty
+                }
 
-        except Exception as e:
+            except Exception as e:
+                status = False
+                errorCode = "SQL-ERROR"
+                data = e
+        else:
             status = False
-            data = e
-    print("To client", status, data)
-    emit('addProduct', {"status": status, "data": data})
+            errorCode = "ID-ERROR"
+            data = "Product ID already exist"
+
+    emit('addProduct', {"status": status,
+         "errorCode": errorCode, "data": data})
