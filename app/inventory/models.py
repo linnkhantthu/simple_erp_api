@@ -3,6 +3,7 @@ from app import db
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, nullable=False)
     productName = db.Column(db.String(60), nullable=False)
     contains = db.Column(db.Integer, nullable=False)
     unit = db.Column(db.String(150), nullable=False)

@@ -1,163 +1,25 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from app.inventory.models import Product
 from app.users.models import User
-from flask_socketio import emit
+from flask_socketio import emit, send
 from app import socketio, db
 
 inventory = Blueprint('inventory', __name__)
 
-
-@inventory.route('/inventory', methods=['POST'])
-def products():
-    dummyProductList = [
-        {
-            "id": 1,
-            "productName": "Hat",
-            "contains": 100,
-            "unit": "PCS",
-            "price": 2500.0,
-            "qty": 200,
-        },
-        {
-            "id": 2,
-            "productName": "Shoes",
-            "contains": 50,
-            "unit": "PCS",
-            "price": 25000.0,
-            "qty": 150,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-        {
-            "id": 1,
-            "productName": "iPad",
-            "contains": 1,
-            "unit": "PCS",
-            "price": 1100000.0,
-            "qty": 5,
-        },
-    ]
-    data = request.get_json()
-    user = User.query.filter_by(mail=data['mail']).first()
-    if user:
-        response = {
-            "status": True,
-            "data": [],
-        }
-        products = Product.query.filter_by(owner=user)
-        for product in dummyProductList:
-            response["data"].append({"id": product['id'],
-                                     "productName": product['productName'],
-                                     "contains": product['contains'],
-                                     "unit": product['unit'],
-                                     "price": product['price'],
-                                     "qty": product['qty']}
-                                    )
-        return jsonify(response)
-    else:
-        response = {"status": False, "data": {
-            "message": "You don't have access to this page"}}
-    return response
+clients = []
 
 
 @socketio.on('getProducts')
 def product_list(data):
 
     user = User.query.filter_by(mail=data['mail']).first()
+    client = {
+        "id": request.sid,
+        "mail": data['mail'],
+        "connections": 1
+    }
+    clients.append(client)
+    print(client)
 
     if(user):
         products = Product.query.filter_by(owner=user)
@@ -165,7 +27,7 @@ def product_list(data):
         for product in products:
             productList.append(
                 {
-                    "id": int(product.id),
+                    "id": int(product.product_id),
                     "productName": product.productName,
                     "contains": int(product.contains),
                     "unit": product.unit,
@@ -173,6 +35,7 @@ def product_list(data):
                     "qty": int(product.qty)
                 },
             )
+
         emit('getProducts',  {'data': productList, 'units': ["PCS", "KG"]})
     else:
         emit('getProducts', {'data': []})
@@ -185,10 +48,11 @@ def add_product(dataFromServer):
     data = "You don't have access to this route"
     user = User.query.filter_by(mail=dataFromServer['mail']).first()
     if(user):
-        productExist = Product.query.get(dataFromServer['id'])
+        productExist = Product.query.filter_by(
+            product_id=dataFromServer['id'], owner=user).first()
         if(not productExist):
             product = Product(
-                id=int(dataFromServer['id']),
+                product_id=int(dataFromServer['id']),
                 productName=dataFromServer['productName'],
                 contains=int(dataFromServer['contains']),
                 price=float(dataFromServer['price']),
@@ -201,7 +65,7 @@ def add_product(dataFromServer):
                 status = True
                 addedProduct = Product.query.get(product.id)
                 data = {
-                    "id": addedProduct.id,
+                    "id": addedProduct.product_id,
                     "productName": addedProduct.productName,
                     "contains": addedProduct.contains,
                     "unit": addedProduct.unit,
