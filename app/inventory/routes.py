@@ -3,6 +3,7 @@ from app.inventory.models import Product
 from app.users.models import User
 from flask_socketio import emit, send
 from app import socketio, db
+from app.error_codes import ErrorCodes
 
 inventory = Blueprint('inventory', __name__)
 
@@ -19,7 +20,7 @@ def product_list(data):
         "connections": 1
     }
     clients.append(client)
-    print(client)
+    # print(client)
 
     if(user):
         products = Product.query.filter_by(owner=user)
@@ -44,7 +45,7 @@ def product_list(data):
 @socketio.on('addProduct')
 def add_product(dataFromServer):
     status = False
-    errorCode = "PASS"
+    errorCode = ErrorCodes.noError
     data = "You don't have access to this route"
     user = User.query.filter_by(mail=dataFromServer['mail']).first()
     if(user):
@@ -75,12 +76,11 @@ def add_product(dataFromServer):
 
             except Exception as e:
                 status = False
-                errorCode = "SQL-ERROR"
+                errorCode = ErrorCodes.sqlError
                 data = e
         else:
             status = False
-            errorCode = "ID-ERROR"
+            errorCode = ErrorCodes.productIdUniqueError
             data = "Product ID already exist"
-
     emit('addProduct', {"status": status,
          "errorCode": errorCode, "data": data})
