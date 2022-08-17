@@ -84,3 +84,40 @@ def add_product(dataFromServer):
             data = "Product ID already exist"
     emit('addProduct', {"status": status,
          "errorCode": errorCode, "data": data})
+
+
+@inventory.route('/delete_product', methods=['POST'])
+def delete_product():
+    status = False
+    message = "You don't have access to this route"
+    data = request.get_json()
+    print(f"User: {data['mail']}")
+    print(f"User: {data['product_id']}")
+    user = User.query.filter_by(mail=data['mail']).first()
+    if(user):
+        deleteProduct = Product.query.filter_by(
+            owner=user, product_id=data['product_id']).first()
+        if(deleteProduct):
+            try:
+                db.session.delete(deleteProduct)
+                db.session.commit()
+                status = True
+                message = {
+                    "id": deleteProduct.product_id,
+                    "productName": deleteProduct.productName,
+                    "contains": deleteProduct.contains,
+                    "unit": deleteProduct.unit,
+                    "price": deleteProduct.price,
+                    "qty": deleteProduct.qty
+                }
+            except Exception as e:
+                status = False
+                message = str(e)
+        else:
+            status = False
+            message = "Product already deleted or doesn't exist"
+    to_client = {
+        "status": status,
+        "data": message
+    }
+    return to_client
