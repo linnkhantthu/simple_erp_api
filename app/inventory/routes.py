@@ -91,8 +91,7 @@ def delete_product():
     status = False
     message = "You don't have access to this route"
     data = request.get_json()
-    print(f"User: {data['mail']}")
-    print(f"User: {data['product_id']}")
+
     user = User.query.filter_by(mail=data['mail']).first()
     if(user):
         deleteProduct = Product.query.filter_by(
