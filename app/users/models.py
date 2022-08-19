@@ -11,6 +11,8 @@ class User(db.Model):
     unit = db.relationship('Unit', backref='owner', lazy=True)
     purchasevoucher = db.relationship(
         'PurchaseVoucher', backref='owner', lazy=True)
+    suppliers = db.relationship('Suppliers', backref='owner', lazy=True)
+    warehouses = db.relationship('Warehouses', backref='owner', lazy=True)
 
     def __repr__(self):
         return f"<User {self.mail}>"

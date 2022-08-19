@@ -20,7 +20,6 @@ def product_list(data):
         "connections": 1
     }
     clients.append(client)
-    # print(client)
 
     if(user):
         products = Product.query.filter_by(owner=user)
@@ -48,6 +47,7 @@ def add_product(dataFromServer):
     errorCode = ErrorCodes.noError
     data = "You don't have access to this route"
     user = User.query.filter_by(mail=dataFromServer['mail']).first()
+
     if(user):
         productExist = Product.query.filter_by(
             product_id=dataFromServer['id'], owner=user).first()
@@ -60,6 +60,7 @@ def add_product(dataFromServer):
                 unit=dataFromServer['unit'],
                 owner=user
             )
+
             db.session.add(product)
             try:
                 db.session.commit()
@@ -77,11 +78,12 @@ def add_product(dataFromServer):
             except Exception as e:
                 status = False
                 errorCode = ErrorCodes.sqlError
-                data = e
+                data = str(e)
         else:
             status = False
             errorCode = ErrorCodes.productIdUniqueError
             data = "Product ID already exist"
+
     emit('addProduct', {"status": status,
          "errorCode": errorCode, "data": data})
 
