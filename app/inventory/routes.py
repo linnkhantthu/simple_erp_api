@@ -14,6 +14,7 @@ clients = []
 def product_list(data):
 
     user = User.query.filter_by(mail=data['mail']).first()
+    token = data['token']
     client = {
         "id": request.sid,
         "mail": data['mail'],
@@ -21,7 +22,7 @@ def product_list(data):
     }
     clients.append(client)
 
-    if(user):
+    if (user and user.token == token):
         products = Product.query.filter_by(owner=user)
         productList = []
         for product in products:
@@ -47,11 +48,12 @@ def add_product(dataFromServer):
     errorCode = ErrorCodes.noError
     data = "You don't have access to this route"
     user = User.query.filter_by(mail=dataFromServer['mail']).first()
+    token = data['token']
 
-    if(user):
+    if (user and user.token == token):
         productExist = Product.query.filter_by(
             product_id=dataFromServer['id'], owner=user).first()
-        if(not productExist):
+        if (not productExist):
             product = Product(
                 product_id=int(dataFromServer['id']),
                 productName=dataFromServer['productName'],
@@ -95,10 +97,11 @@ def delete_product():
     data = request.get_json()
 
     user = User.query.filter_by(mail=data['mail']).first()
-    if(user):
+    token = data['token']
+    if (user and user.token == token):
         deleteProduct = Product.query.filter_by(
             owner=user, product_id=data['product_id']).first()
-        if(deleteProduct):
+        if (deleteProduct):
             try:
                 db.session.delete(deleteProduct)
                 db.session.commit()

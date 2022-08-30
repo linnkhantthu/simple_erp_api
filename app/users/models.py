@@ -7,6 +7,7 @@ class User(db.Model):
     lastName = db.Column(db.String(60), nullable=False)
     mail = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    token = db.Column(db.String(150), nullable=False)
     product = db.relationship('Product', backref='owner', lazy=True)
     unit = db.relationship('Unit', backref='owner', lazy=True)
     purchasevoucher = db.relationship(
