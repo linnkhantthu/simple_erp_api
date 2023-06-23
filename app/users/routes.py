@@ -13,12 +13,13 @@ def register():
     password = bcrypt.generate_password_hash(data['password'])
     token = secrets.token_hex(16)
     db_user = User.query.filter_by(mail=data['mail']).first()
-    db.session.add(user)
+
     if (db_user):
         response = {"status": False, "data": {"message": "User already exist"}}
     else:
         user = User(mail=data['mail'], firstName=data['firstName'],
                     lastName=data['lastName'], password=password, token=token)
+        db.session.add(user)
         db.session.commit()
         response = {
             "status": True,
@@ -32,20 +33,23 @@ def register():
 
 @users.route('/login', methods=['POST'])
 def login():
+    print("Login Requested")
     data = request.get_json()
     user = User.query.filter_by(mail=data['mail']).first()
 
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        token = data['token']
+        token = user.token
         response = {
             "status": True,
-            "token": token,
             "data": {"id": user.id,
                      "firstName": user.firstName,
                      "lastName": user.lastName,
-                     "mail": user.mail}
+                     "mail": user.mail,
+                     "token": token
+                     }
         }
     else:
         response = {"status": False, "data": {
             "message": "Mail or Password is incorrect"}}
+    print(response)
     return response
